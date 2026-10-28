@@ -6,6 +6,9 @@ api:
   image: fhir-api
   replicas: 2
   port: 8000
+  serviceAccount: fhir-api
+  gcpServiceAccount: "fhir-api@REPLACE_ME.iam.gserviceaccount.com"
+  cloudSqlConnectionName: "REPLACE_ME:us-central1:fhir-postgres"
   env:
     - name: REQUIRE_AUTH
       value: "true"
@@ -16,7 +19,7 @@ api:
     - name: OIDC_AUDIENCE
       value: "fhir-api"
     - name: DATABASE_URL
-      value: "postgresql://fhir:fhir-demo-password@REPLACE_ME:5432/fhir"
+      value: "postgresql://fhir:fhir-demo-password@localhost:5432/fhir"  # via cloud-sql-proxy sidecar
   service:
     type: LoadBalancer
     port: 80
@@ -24,6 +27,7 @@ api:
 pipeline:
   image: fhir-event-pipeline
   serviceAccount: fhir-pipeline
+  gcpServiceAccount: "fhir-pipeline@REPLACE_ME.iam.gserviceaccount.com"
   env:
     - name: GCP_PROJECT_ID
       value: "REPLACE_ME"
