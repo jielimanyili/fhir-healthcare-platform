@@ -1,0 +1,36 @@
+# Cloud Build CI/CD (Phase 3) — build, push, deploy to GKE.
+# Trigger: push to main. Configure via: gcloud builds triggers create github ...
+steps:
+  # Build + push the FastAPI image.
+  - name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/fhir-api:$SHORT_SHA', './api']
+  - name: gcr.io/cloud-builders/docker
+    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/fhir-api:$SHORT_SHA']
+
+  # Build + push the Java pipeline image.
+  - name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/fhir-event-pipeline:$SHORT_SHA', './pipeline']
+  - name: gcr.io/cloud-builders/docker
+    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/fhir-event-pipeline:$SHORT_SHA']
+
+  # Deploy to GKE via Helm.
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        set -e
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        gcloud container clusters get-credentials ${_CLUSTER} --region ${_REGION} --project $PROJECT_ID
+        helm upgrade --install fhir ./helm/fhir \
+          --set image.repository=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO} \
+          --set image.tag=$SHORT_SHA
+
+substitutions:
+  _REGION: us-central1
+  _REPO: fhir
+  _CLUSTER: fhir-gke
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/fhir-api:$SHORT_SHA'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/fhir-event-pipeline:$SHORT_SHA'

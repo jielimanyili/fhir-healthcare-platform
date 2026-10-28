@@ -1,0 +1,62 @@
+# Google API Gateway config for the FHIR R4 API (Phase 3).
+# Edge-level OIDC validation + routing to the GKE FastAPI backend. The backend
+# still enforces SMART-on-FHIR scopes (defense in depth, ADR-0003).
+swagger: "2.0"
+info:
+  title: FHIR Healthcare Analytics API
+  description: API-first gateway for the FHIR R4 subset (Patient / Observation / Claim / ClaimResponse).
+  version: 1.0.0
+schemes:
+  - https
+produces:
+  - application/json
+
+securityDefinitions:
+  fhir_oidc:
+    type: oauth2
+    flow: implicit
+    authorizationUrl: ""
+    # Replace with the real Keycloak issuer/JWKS at deploy time.
+    x-google-issuer: "https://keycloak.example.com/realms/fhir"
+    x-google-jwks_uri: "https://keycloak.example.com/realms/fhir/protocol/openid-connect/certs"
+    x-google-audiences: "fhir-api"
+
+security:
+  - fhir_oidc: []
+
+paths:
+  /fhir/Patient:
+    get:
+      summary: Search patients
+      operationId: searchPatients
+      x-google-backend:
+        address: "https://REPLACE_WITH_API_SERVICE_URL"
+        path_translation: APPEND_PATH_TO_ADDRESS
+      responses:
+        "200":
+          description: FHIR Bundle (searchset)
+  /fhir/Patient/{id}:
+    get:
+      summary: Read a patient
+      operationId: readPatient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      x-google-backend:
+        address: "https://REPLACE_WITH_API_SERVICE_URL"
+        path_translation: APPEND_PATH_TO_ADDRESS
+      responses:
+        "200":
+          description: FHIR Patient
+  /fhir/ClaimResponse:
+    post:
+      summary: Create an adjudication (approve/decline a claim)
+      operationId: createClaimResponse
+      x-google-backend:
+        address: "https://REPLACE_WITH_API_SERVICE_URL"
+        path_translation: APPEND_PATH_TO_ADDRESS
+      responses:
+        "201":
+          description: FHIR ClaimResponse
