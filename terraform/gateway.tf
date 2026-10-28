@@ -23,7 +23,6 @@ resource "google_api_gateway_api_config" "fhir_config" {
 
 resource "google_api_gateway_gateway" "fhir_gateway" {
   provider    = google-beta
-  api         = google_api_gateway_api.fhir_api.api_id
   gateway_id  = "fhir-gateway"
   api_config  = google_api_gateway_api_config.fhir_config.api_config_id
   region      = var.region
