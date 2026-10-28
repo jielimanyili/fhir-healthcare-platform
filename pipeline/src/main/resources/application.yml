@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: fhir-event-pipeline
+
+gcp:
+  project-id: ${GCP_PROJECT_ID}
+  subscription: ${GCP_SUBSCRIPTION:fhir-resource-events-sub}
+  bigquery:
+    dataset: ${BIGQUERY_DATASET:fhir_analytics}

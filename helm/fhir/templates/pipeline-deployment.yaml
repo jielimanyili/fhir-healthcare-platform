@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fhir.fullname" . }}-pipeline
+  labels:
+    app: fhir-pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fhir-pipeline
+  template:
+    metadata:
+      labels:
+        app: fhir-pipeline
+    spec:
+      serviceAccountName: {{ .Values.pipeline.serviceAccount }}
+      containers:
+        - name: pipeline
+          image: "{{ .Values.image.repository }}/{{ .Values.pipeline.image }}:{{ .Values.image.tag }}"
+          env:
+            {{- range .Values.pipeline.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fhir.fullname" . }}-api
+  labels:
+    app: fhir-api
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app: fhir-api
+  template:
+    metadata:
+      labels:
+        app: fhir-api
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}/{{ .Values.api.image }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.api.port }}
+          env:
+            {{- range .Values.api.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: {{ .Values.api.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10

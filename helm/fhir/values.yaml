@@ -1,0 +1,33 @@
+image:
+  repository: REPLACE_ME   # Artifact Registry / GCR repository (e.g. us-central1-docker.pkg.dev/PROJECT/fhir)
+  tag: latest
+
+api:
+  image: fhir-api
+  replicas: 2
+  port: 8000
+  env:
+    - name: REQUIRE_AUTH
+      value: "true"
+    - name: OIDC_ISSUER
+      value: "http://REPLACE_ME/realms/fhir"
+    - name: OIDC_JWKS_URL
+      value: "http://REPLACE_ME/realms/fhir/protocol/openid-connect/certs"
+    - name: OIDC_AUDIENCE
+      value: "fhir-api"
+    - name: DATABASE_URL
+      value: "postgresql://fhir:fhir-demo-password@REPLACE_ME:5432/fhir"
+  service:
+    type: LoadBalancer
+    port: 80
+
+pipeline:
+  image: fhir-event-pipeline
+  serviceAccount: fhir-pipeline
+  env:
+    - name: GCP_PROJECT_ID
+      value: "REPLACE_ME"
+    - name: GCP_SUBSCRIPTION
+      value: "fhir-resource-events-sub"
+    - name: BIGQUERY_DATASET
+      value: "fhir_analytics"
