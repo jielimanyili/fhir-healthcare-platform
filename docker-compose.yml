@@ -6,6 +6,10 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://fhir:fhir@postgres:5432/fhir
+      REQUIRE_AUTH: "true"
+      OIDC_ISSUER: http://localhost:8080/realms/fhir
+      OIDC_JWKS_URL: http://keycloak:8080/realms/fhir/protocol/openid-connect/certs
+      OIDC_AUDIENCE: fhir-api
     depends_on:
       postgres:
         condition: service_healthy
@@ -24,6 +28,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: fhir-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infra/keycloak/fhir-realm.json:/opt/keycloak/data/import/fhir-realm.json:ro
 
   ui:
     build: ./ui
