@@ -1,0 +1,14 @@
+services:
+  api:
+    build: ./api
+    container_name: fhir-api
+    ports:
+      - "8000:8000"
+
+  ui:
+    build: ./ui
+    container_name: fhir-ui
+    ports:
+      - "4200:80"
+    depends_on:
+      - api

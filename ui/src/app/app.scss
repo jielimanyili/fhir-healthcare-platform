@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  max-width: 720px;
+  margin: 2rem auto;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+h1 {
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: #666;
+  margin-top: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.error {
+  color: #b00020;
+  background: #fdecea;
+  padding: 0.75rem;
+  border-radius: 4px;
+}
+
+.muted {
+  color: #888;
+}
+
+button {
+  padding: 0.4rem 0.8rem;
+  margin-bottom: 1rem;
+}
