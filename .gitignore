@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Env & secrets
+.env
+.env.local
+*.pem
+credentials.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Helm
+charts/*.tgz
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
