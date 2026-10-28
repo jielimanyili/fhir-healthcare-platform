@@ -68,3 +68,21 @@ def test_create_patient_assigns_id():
 
 def test_read_missing_returns_404():
     assert make_client().get("/fhir/Patient/nope").status_code == 404
+
+
+def test_deidentified_patient_redacts_phi():
+    r = make_client().get("/fhir/Patient/p-001?deidentified=true")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["name"] == "redacted"
+    assert body["birthDate"] == "redacted"
+    assert body["gender"] == "female"  # non-PHI field is kept
+
+
+def test_audit_records_requests():
+    c = make_client()
+    c.get("/fhir/Patient/p-001")
+    r = c.get("/api/audit")
+    assert r.status_code == 200
+    paths = [e["path"] for e in r.json()["events"]]
+    assert "/fhir/Patient/p-001" in paths

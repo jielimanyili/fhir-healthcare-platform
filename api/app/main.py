@@ -1,19 +1,25 @@
 """FastAPI application factory."""
+import os
+
 from fastapi import FastAPI
 
-from .repository import InMemoryRepository
+from .audit import AuditMiddleware, recent
+from .db import make_session_factory
+from .repository import InMemoryRepository, PostgresRepository
 from .routers import build_routers, metadata_router
 from .seed import seed
 
 
-def create_app() -> FastAPI:
-    repo = InMemoryRepository()
-    seed(repo)
+def create_app(repository=None):
+    if repository is None:
+        url = os.environ.get("DATABASE_URL")
+        repository = PostgresRepository(make_session_factory(url)) if url else InMemoryRepository()
+        seed(repository)
 
-    app = FastAPI(title="FHIR Healthcare Analytics Platform", version="0.1.0")
-
+    app = FastAPI(title="FHIR Healthcare Analytics Platform", version="0.2.0")
+    app.add_middleware(AuditMiddleware)
     app.include_router(metadata_router)
-    for router in build_routers(repo):
+    for router in build_routers(repository):
         app.include_router(router)
 
     @app.get("/")
@@ -23,6 +29,10 @@ def create_app() -> FastAPI:
     @app.get("/api/health")
     def health():
         return {"status": "ok", "service": "fhir-healthcare-platform"}
+
+    @app.get("/api/audit")
+    def audit(limit: int = 50):
+        return {"events": recent(limit)}
 
     return app
 

@@ -1,9 +1,13 @@
-"""Synthetic seed data — no real PHI (ADR-0002 decision #1)."""
-from .repository import InMemoryRepository
+"""Synthetic seed data — no real PHI (ADR-0002 decision #1). Idempotent."""
+from .repository import InMemoryRepository, PostgresRepository
 
 
-def seed(repo: InMemoryRepository) -> None:
-    repo.create("Patient", "p-001", {
+def seed(repo) -> None:
+    def add(resource_type: str, resource_id: str, payload: dict) -> None:
+        if repo.get(resource_type, resource_id) is None:
+            repo.create(resource_type, resource_id, payload)
+
+    add("Patient", "p-001", {
         "resourceType": "Patient",
         "id": "p-001",
         "identifier": [{"system": "urn:oid:1.2.840.114350.1.13", "value": "MRN-000123"}],
@@ -14,7 +18,7 @@ def seed(repo: InMemoryRepository) -> None:
         "address": [{"city": "Dayton", "state": "OH", "postalCode": "45458"}],
     })
 
-    repo.create("Patient", "p-002", {
+    add("Patient", "p-002", {
         "resourceType": "Patient",
         "id": "p-002",
         "name": [{"use": "official", "family": "Johnson", "given": ["Robert"]}],
@@ -23,7 +27,7 @@ def seed(repo: InMemoryRepository) -> None:
         "address": [{"city": "Columbus", "state": "OH", "postalCode": "43215"}],
     })
 
-    repo.create("Observation", "o-001", {
+    add("Observation", "o-001", {
         "resourceType": "Observation",
         "id": "o-001",
         "status": "final",
@@ -34,7 +38,7 @@ def seed(repo: InMemoryRepository) -> None:
         "valueQuantity": {"value": 13.8, "unit": "g/dL", "system": "http://unitsofmeasure.org", "code": "g/dL"},
     })
 
-    repo.create("Claim", "c-001", {
+    add("Claim", "c-001", {
         "resourceType": "Claim",
         "id": "c-001",
         "status": "active",
@@ -46,7 +50,7 @@ def seed(repo: InMemoryRepository) -> None:
         "total": {"value": 145.00, "currency": "USD"},
     })
 
-    repo.create("ClaimResponse", "cr-001", {
+    add("ClaimResponse", "cr-001", {
         "resourceType": "ClaimResponse",
         "id": "cr-001",
         "status": "active",
