@@ -26,7 +26,7 @@ flowchart TB
   G -->|forward| F[FastAPI FHIR API]
   F -->|resources| P[(Cloud SQL Postgres - FHIR JSONB)]
   F -->|events| M[Pub/Sub]
-  M -->|analytics| B[(BigQuery)]
+  M --> J[Java Spring Boot pipeline] --> B[(BigQuery)]
   F -->|audit| L[Cloud Logging audit trail]
 ```
 
@@ -38,6 +38,7 @@ flowchart TB
 | Keycloak | Keycloak | OIDC/OAuth2 IdP; RBAC (clinician vs admin scopes) |
 | Postgres | Cloud SQL (PostgreSQL, JSONB) | System of record for FHIR resources |
 | Pub/Sub | Google Pub/Sub | Event stream (resource created/updated) |
+| Event pipeline | Java 21 + Spring Boot | Consumes Pub/Sub events, writes BigQuery aggregations |
 | BigQuery | Google BigQuery | Analytical store + SQL aggregations |
 | Orchestration | GKE Autopilot (Helm) + Terraform | Runs API/UI; IaC for VPC, firewall, cluster, datasets |
 
@@ -52,6 +53,7 @@ sequenceDiagram
   participant F as FastAPI FHIR API
   participant P as Cloud SQL Postgres
   participant M as Pub/Sub
+  participant J as Java pipeline
   participant B as BigQuery
 
   U->>UI: search patients
@@ -64,7 +66,8 @@ sequenceDiagram
   F-->>G: FHIR Bundle
   G-->>UI: 200 JSON
   F->>M: publish Patient.updated
-  M->>B: analytics insert
+  M->>J: consume event
+  J->>B: write aggregation
 ```
 
 ## 4. Components (C4 Level 3)
@@ -112,6 +115,7 @@ flowchart TB
 | FHIR routers, domain services, middleware, repository, Pydantic models | `api/` |
 | Views, guards, auth service, FHIR client | `ui/` |
 | VPC, firewall, GKE Autopilot, BigQuery, Pub/Sub (Terraform) | `terraform/` |
+| Java event pipeline (Pub/Sub consumer → BigQuery) | `pipeline/` |
 | GKE deployment chart | `helm/` |
 | Keycloak realm + API gateway (OpenAPI) config | `infra/` |
 
@@ -134,6 +138,7 @@ Point to `docs/adr/`:
 - [ADR-0001](adr/0001-stack-and-architecture.md) — stack + architecture.
 - [ADR-0002](adr/0002-healthcare-compliance-and-data.md) — FHIR subset, synthetic data, PHI handling, RBAC.
 - [ADR-0003](adr/0003-identity-and-authorization.md) — Keycloak IdP + SMART on FHIR scopes + JWT validation.
+- [ADR-0004](adr/0004-java-event-pipeline.md) — Java Spring Boot pipeline (Pub/Sub → BigQuery).
 
 ## 7. Honesty boundary
 
