@@ -30,7 +30,7 @@ paths:
       summary: Search patients
       operationId: searchPatients
       x-google-backend:
-        address: "https://REPLACE_WITH_API_SERVICE_URL"
+        address: "https://fhir-api.example.com"
         path_translation: APPEND_PATH_TO_ADDRESS
       responses:
         "200":
@@ -45,7 +45,7 @@ paths:
           required: true
           type: string
       x-google-backend:
-        address: "https://REPLACE_WITH_API_SERVICE_URL"
+        address: "https://fhir-api.example.com"
         path_translation: APPEND_PATH_TO_ADDRESS
       responses:
         "200":
@@ -55,7 +55,7 @@ paths:
       summary: Create an adjudication (approve/decline a claim)
       operationId: createClaimResponse
       x-google-backend:
-        address: "https://REPLACE_WITH_API_SERVICE_URL"
+        address: "https://fhir-api.example.com"
         path_translation: APPEND_PATH_TO_ADDRESS
       responses:
         "201":
