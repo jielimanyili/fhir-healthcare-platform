@@ -50,6 +50,8 @@ keycloak:
     tag: "26.1"
   adminUser: admin
   adminPassword: admin
+  service:
+    type: LoadBalancer
 
 ui:
   image: fhir-ui

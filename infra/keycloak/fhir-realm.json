@@ -1,7 +1,7 @@
 {
   "realm": "fhir",
   "enabled": true,
-  "sslRequired": "external",
+  "sslRequired": "none",
   "registrationAllowed": false,
   "roles": {
     "realm": [

@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "fhir.fullname" . }}-keycloak
 spec:
-  type: ClusterIP
+  type: {{ .Values.keycloak.service.type }}
   selector:
     app: fhir-keycloak
   ports:
