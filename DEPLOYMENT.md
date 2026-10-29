@@ -65,9 +65,10 @@ kubectl get pods
 `REPLACE_WITH_API_SERVICE_URL` in `infra/gateway/openapi.yaml` with the GKE API service URL
 (`kubectl get svc fhir-api`).
 
-## Run the demo (port-forward)
+## Run the demo (public UI + port-forward)
 
-The API + Keycloak run in-cluster. For a local walkthrough, port-forward and run the script:
+The `fhir-ui` LoadBalancer serves the SPA publicly with Keycloak login — get its IP with
+`kubectl get svc fhir-ui`. For the scripted OIDC/RBAC walkthrough, port-forward and run:
 
 ```bash
 kubectl port-forward svc/fhir-keycloak 8080:8080 &
