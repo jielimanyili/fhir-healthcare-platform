@@ -1,5 +1,9 @@
+# FHIR Healthcare Analytics Platform — GKE deployment values.
+# Install with: helm upgrade --install fhir ./helm/fhir
+# (release name must be "fhir": in-cluster hostnames like fhir-keycloak depend on it.)
+
 image:
-  repository: REPLACE_ME   # Artifact Registry / GCR repository (e.g. us-central1-docker.pkg.dev/PROJECT/fhir)
+  repository: us-central1-docker.pkg.dev/model-summit-97213/fhir
   tag: latest
 
 api:
@@ -7,19 +11,23 @@ api:
   replicas: 2
   port: 8000
   serviceAccount: fhir-api
-  gcpServiceAccount: "fhir-api@REPLACE_ME.iam.gserviceaccount.com"
-  cloudSqlConnectionName: "REPLACE_ME:us-central1:fhir-postgres"
+  gcpServiceAccount: "fhir-api@model-summit-97213.iam.gserviceaccount.com"
+  cloudSqlConnectionName: "model-summit-97213:us-central1:fhir-postgres"
   env:
     - name: REQUIRE_AUTH
       value: "true"
     - name: OIDC_ISSUER
-      value: "http://REPLACE_ME/realms/fhir"
+      value: "http://localhost:8080/realms/fhir"
     - name: OIDC_JWKS_URL
-      value: "http://REPLACE_ME/realms/fhir/protocol/openid-connect/certs"
+      value: "http://fhir-keycloak:8080/realms/fhir/protocol/openid-connect/certs"
     - name: OIDC_AUDIENCE
       value: "fhir-api"
     - name: DATABASE_URL
       value: "postgresql://fhir:fhir-demo-password@localhost:5432/fhir"  # via cloud-sql-proxy sidecar
+    - name: GCP_PROJECT_ID
+      value: "model-summit-97213"
+    - name: PUBSUB_TOPIC
+      value: "fhir-resource-events"
   service:
     type: LoadBalancer
     port: 80
@@ -27,11 +35,19 @@ api:
 pipeline:
   image: fhir-event-pipeline
   serviceAccount: fhir-pipeline
-  gcpServiceAccount: "fhir-pipeline@REPLACE_ME.iam.gserviceaccount.com"
+  gcpServiceAccount: "fhir-pipeline@model-summit-97213.iam.gserviceaccount.com"
   env:
     - name: GCP_PROJECT_ID
-      value: "REPLACE_ME"
+      value: "model-summit-97213"
     - name: GCP_SUBSCRIPTION
       value: "fhir-resource-events-sub"
     - name: BIGQUERY_DATASET
       value: "fhir_analytics"
+
+keycloak:
+  image:
+    repository: quay.io/keycloak/keycloak
+    tag: "26.1"
+  adminUser: admin
+  adminPassword: admin
+

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fhir.fullname" . }}-keycloak
+  labels:
+    app: fhir-keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fhir-keycloak
+  template:
+    metadata:
+      labels:
+        app: fhir-keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: "{{ .Values.keycloak.image.repository }}:{{ .Values.keycloak.image.tag }}"
+          args: ["start-dev", "--import-realm"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: {{ .Values.keycloak.adminUser | quote }}
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: {{ .Values.keycloak.adminPassword | quote }}
+          volumeMounts:
+            - name: realm
+              mountPath: /opt/keycloak/data/import/fhir-realm.json
+              subPath: fhir-realm.json
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /realms/fhir
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+      volumes:
+        - name: realm
+          configMap:
+            name: {{ include "fhir.fullname" . }}-keycloak-realm

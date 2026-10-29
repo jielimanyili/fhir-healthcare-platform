@@ -1,0 +1,100 @@
+{
+  "realm": "fhir",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "roles": {
+    "realm": [
+      { "name": "patient" },
+      { "name": "clinician" },
+      { "name": "adjudicator" },
+      { "name": "admin" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "fhir-api",
+      "name": "FHIR API (resource server)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "fhir-api-secret",
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "fullScopeAllowed": false,
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "fhir-ui",
+      "name": "FHIR UI (SPA)",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:4200/*"],
+      "webOrigins": ["http://localhost:4200"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "fullScopeAllowed": false
+    }
+  ],
+  "users": [
+    {
+      "username": "patient1",
+      "email": "patient1@example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "realmRoles": ["patient"],
+      "credentials": [{ "type": "password", "value": "patient1", "temporary": false }]
+    },
+    {
+      "username": "clinician1",
+      "email": "clinician1@example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Clinician",
+      "lastName": "One",
+      "realmRoles": ["clinician"],
+      "credentials": [{ "type": "password", "value": "clinician1", "temporary": false }]
+    },
+    {
+      "username": "adjudicator1",
+      "email": "adjudicator1@example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Adjudicator",
+      "lastName": "One",
+      "realmRoles": ["adjudicator"],
+      "credentials": [{ "type": "password", "value": "adjudicator1", "temporary": false }]
+    },
+    {
+      "username": "admin1",
+      "email": "admin1@example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "One",
+      "realmRoles": ["admin"],
+      "credentials": [{ "type": "password", "value": "admin1", "temporary": false }]
+    }
+  ]
+}

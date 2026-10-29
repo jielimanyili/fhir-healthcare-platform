@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "fhir.fullname" . }}-keycloak-realm
+data:
+  fhir-realm.json: |
+{{ .Files.Get "files/fhir-realm.json" | indent 4 }}

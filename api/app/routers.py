@@ -16,6 +16,7 @@ from pydantic import BaseModel
 
 from .auth import belongs_to, can_read, can_write, get_current_user, is_patient_only, patient_id
 from .deidentification import deidentify
+from .events import publish
 from .models import Claim, ClaimResponse, Observation, Patient
 
 _INTERACTIONS = [{"code": c} for c in ("read", "create", "update", "delete", "search-type")]
@@ -48,7 +49,9 @@ def _resource_router(repo, resource_type: str, model: Type[BaseModel], require_a
         data = payload.model_dump()
         data["resourceType"] = resource_type
         data["id"] = data.get("id") or uuid4().hex
-        return repo.create(resource_type, data["id"], data)
+        result = repo.create(resource_type, data["id"], data)
+        publish(resource_type, result)
+        return result
 
     @router.get("")
     def search(
@@ -93,7 +96,9 @@ def _resource_router(repo, resource_type: str, model: Type[BaseModel], require_a
         data = payload.model_dump()
         data["resourceType"] = resource_type
         data["id"] = rid
-        return repo.update(resource_type, rid, data)
+        result = repo.update(resource_type, rid, data)
+        publish(resource_type, result)
+        return result
 
     @router.delete("/{rid}", status_code=204)
     def delete(rid: str, request: Request = None):

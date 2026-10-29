@@ -26,6 +26,9 @@ terraform.tfvars
 # Helm
 charts/*.tgz
 
+# Maven
+target/
+
 # OS / editor
 .DS_Store
 .vscode/
