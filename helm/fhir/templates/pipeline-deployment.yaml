@@ -18,6 +18,7 @@ spec:
       containers:
         - name: pipeline
           image: "{{ .Values.image.repository }}/{{ .Values.pipeline.image }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
           env:
             {{- range .Values.pipeline.env }}
             - name: {{ .name }}

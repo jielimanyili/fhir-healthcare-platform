@@ -5,7 +5,7 @@ RUN mvn dependency:go-offline -q
 COPY src ./src
 RUN mvn package -q -DskipTests
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/fhir-event-pipeline-*.jar app.jar
 EXPOSE 8080

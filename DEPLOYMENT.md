@@ -37,14 +37,15 @@ and (Phase 3) the API Gateway.
 
 ## 2. Build + push images
 
-```bash
-export REGION=us-central1
-export REPO="$REGION-docker.pkg.dev/<PROJECT_ID>/fhir"
-gcloud auth configure-docker "$REGION-docker.pkg.dev"
+> Prefer **Cloud Build** for images — it builds natively on linux/amd64, whereas local
+> Apple Silicon builds produce arm64 images that won't run on GKE nodes:
 
-docker build -t "$REPO/fhir-api:latest" ./api && docker push "$REPO/fhir-api:latest"
-docker build -t "$REPO/fhir-event-pipeline:latest" ./pipeline && docker push "$REPO/fhir-event-pipeline:latest"
+```bash
+gcloud builds submit --tag "$REGION-docker.pkg.dev/<PROJECT_ID>/fhir/fhir-api:latest" ./api
+gcloud builds submit --tag "$REGION-docker.pkg.dev/<PROJECT_ID>/fhir/fhir-event-pipeline:latest" ./pipeline
 ```
+
+(Or, on an amd64 machine, `docker build` + `docker push` as in the original script.)
 
 ## 3. Deploy to GKE (Helm)
 
@@ -64,18 +65,27 @@ kubectl get pods
 `REPLACE_WITH_API_SERVICE_URL` in `infra/gateway/openapi.yaml` with the GKE API service URL
 (`kubectl get svc fhir-api`).
 
-## Wiring to complete (honest notes)
+## Run the demo (port-forward)
 
-The IaC + app code is complete, but three values are deployment-specific and must be set to **your**
-environment before `helm install`:
+The API + Keycloak run in-cluster. For a local walkthrough, port-forward and run the script:
 
-1. **Cloud SQL connection string** — `values.yaml` `DATABASE_URL`. Use the Cloud SQL connection
-   name (`terraform output cloud_sql_connection_name`) + a Cloud SQL Auth Proxy sidecar, or the
-   instance's private/public IP.
-2. **Workload Identity** — bind the GKE `fhir-pipeline` service account to the `fhir-pipeline` GCP
-   SA (Pub/Sub subscriber + BigQuery editor) so the pipeline authenticates without static keys.
-3. **Keycloak URL** — `OIDC_ISSUER` / `OIDC_JWKS_URL`. Deploy Keycloak (or use an external IdP) and
-   set the reachable URL.
+```bash
+kubectl port-forward svc/fhir-keycloak 8080:8080 &
+kubectl port-forward svc/fhir-api 8000:80 &
+./scripts/demo-auth.sh            # OIDC/RBAC walkthrough (clinician/patient/adjudicator/admin)
+
+# Analytics loop: create a Claim (adjudicator) / Observation (admin) → BigQuery
+bq query --nouse_legacy_sql --project_id=<PROJECT_ID> \
+  'SELECT * FROM `fhir_analytics.claims`'
+```
+
+## Wiring (completed)
+
+The three deployment-specific values are wired in `helm/fhir/values.yaml`:
+
+1. **Cloud SQL** — `cloud-sql-proxy` sidecar + Workload Identity (no static keys); `DATABASE_URL` points at `localhost:5432` through the sidecar.
+2. **Workload Identity** — GKE KSAs `fhir-api` / `fhir-pipeline` bound to the GCP SAs.
+3. **Keycloak** — deployed in-cluster; the API resolves JWKS at `http://fhir-keycloak:8080/...`.
 
 ## Teardown (avoid cost)
 
