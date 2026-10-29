@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fhir.fullname" . }}-ui
+  labels:
+    app: fhir-ui
+spec:
+  replicas: {{ .Values.ui.replicas }}
+  selector:
+    matchLabels:
+      app: fhir-ui
+  template:
+    metadata:
+      labels:
+        app: fhir-ui
+    spec:
+      containers:
+        - name: ui
+          image: "{{ .Values.image.repository }}/{{ .Values.ui.image }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10

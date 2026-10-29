@@ -2,34 +2,64 @@
   <h1>FHIR Healthcare Analytics</h1>
   <p class="subtitle">HL7 FHIR R4 · Patient / Observation / Claim (synthetic data)</p>
 
-  @if (error()) {
-    <div class="error">{{ error() }}</div>
-  }
-
-  <button (click)="load()">Refresh</button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Gender</th>
-        <th>Birth date</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (p of patients(); track p.id) {
-        <tr>
-          <td>{{ p.id }}</td>
-          <td>{{ fullName(p) }}</td>
-          <td>{{ p.gender }}</td>
-          <td>{{ p.birthDate }}</td>
-        </tr>
+  @if (!auth.token()) {
+    <section class="login">
+      <h2>Sign in</h2>
+      <p class="muted">
+        Demo accounts: <code>clinician1</code> / <code>clinician1</code> ·
+        <code>admin1</code> / <code>admin1</code> · <code>patient1</code> / <code>patient1</code>
+      </p>
+      <input
+        type="text"
+        placeholder="Username"
+        [value]="username()"
+        (input)="username.set($any($event.target).value)"
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        [value]="password()"
+        (input)="password.set($any($event.target).value)"
+      />
+      <button (click)="login()">Sign in</button>
+      @if (authError()) {
+        <div class="error">{{ authError() }}</div>
       }
-    </tbody>
-  </table>
+    </section>
+  } @else {
+    <div class="toolbar">
+      <span>Signed in as <strong>{{ auth.user() }}</strong></span>
+      <button (click)="load()">Refresh</button>
+      <button (click)="logout()">Sign out</button>
+    </div>
 
-  @if (loading()) {
-    <p class="muted">Loading…</p>
+    @if (error()) {
+      <div class="error">{{ error() }}</div>
+    }
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Gender</th>
+          <th>Birth date</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of patients(); track p.id) {
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ fullName(p) }}</td>
+            <td>{{ p.gender }}</td>
+            <td>{{ p.birthDate }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (loading()) {
+      <p class="muted">Loading…</p>
+    }
   }
 </main>
