@@ -67,8 +67,10 @@ kubectl get pods
 
 ## Run the demo (public UI + port-forward)
 
-The `fhir-ui` LoadBalancer serves the SPA publicly with Keycloak login — get its IP with
-`kubectl get svc fhir-ui`. For the scripted OIDC/RBAC walkthrough, port-forward and run:
+The UI is deployed to **Cloud Run** (HTTPS): get its URL with
+`gcloud run services describe fhir-ui --region us-central1 --format='value(status.url)'`.
+A GKE LoadBalancer copy also exists (`kubectl get svc fhir-ui`). For the scripted
+OIDC/RBAC walkthrough, port-forward and run:
 
 ```bash
 kubectl port-forward svc/fhir-keycloak 8080:8080 &

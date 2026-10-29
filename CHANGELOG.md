@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pub/Sub event publisher in the API (Claim/Observation create/update → `fhir-resource-events`).
 - Keycloak (OIDC/RBAC) deployment in the Helm chart (realm ConfigMap + service).
 - Angular UI deployment (Keycloak login + patient list) with nginx reverse proxy for `/fhir` and `/auth`.
+- UI deployed to Cloud Run (`*.run.app`, HTTPS) via a `$PORT`-aware nginx image with configurable upstreams; Keycloak exposed via LoadBalancer.
 
 ## [0.4.0] - 2026-10-28
 ### Added
