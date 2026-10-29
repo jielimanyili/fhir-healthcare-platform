@@ -89,4 +89,5 @@ All data is **synthetic** — no real PHI.
 | [docs/adr/](docs/adr/) | Decision log |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Now / Next / Later |
 | [docs/PHASES.md](docs/PHASES.md) | Work breakdown + status |
+| [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | Recording / walkthrough scripts (browser + terminal) |
 | [AGENTS.md](AGENTS.md) | AI coding-agent instructions |
